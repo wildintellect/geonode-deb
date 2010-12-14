@@ -1,0 +1,20 @@
+Template: geonode/django_user
+Type: string
+Default: admin
+Description: Please enter an admin username:
+ The default username is 'admin', hit enter to accept, or pick your own.
+
+Template: geonode/django_password
+Type: password
+Default: admin
+Description: Please enter an admin password:
+ The default password is 'admin', hit enter to accept, or pick your own.
+
+Template: geonode/hostname
+Type: string
+Default: localhost
+Description: Please enter the hostname you will access geonode on:
+ This should be either a resolved dnsname or an ip address.
+ Hit enter to use 'localhost' ONLY if this service is running on
+ your local machine.  do not include paths or http://
+
