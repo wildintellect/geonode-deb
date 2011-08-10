@@ -8,7 +8,7 @@ Homepage: http://geonode.org/
 
 Package: geonode
 Architecture: any
-Depends: debconf, python, python-dev, sun-java6-jre | openjdk-6-jre, tomcat6, postgresql-8.4, gcc, patch, unzip, libjpeg-dev, libpng-dev, python-gdal, libproj-dev, python-psycopg2, apache2, libapache2-mod-wsgi, ${misc:Depends}
+Depends: debconf, python, python-dev, sun-java6-jre | openjdk-6-jre, tomcat6, postgresql-8.4, gcc, patch, zip, virtualenvwrapper, python-imaging, python-reportlab, gdal-bin, libgeos-dev, python-urlgrabber, python-virtualenv, python-pastescript, gettext, postgresql-contrib, libpq-dev, unzip, libjpeg-dev, libpng-dev, python-gdal, libproj-dev, python-psycopg2, apache2, libapache2-mod-wsgi, ${misc:Depends}
 #,${shlibs:Depends}
 Description: Allows the creation, sharing, and collaborative use of geospatial data. 
  At its core, the GeoNode has a stack based on GeoServer, 
