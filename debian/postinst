@@ -70,19 +70,20 @@ function configurepostgres() {
 function configuredjango() {
 	# set up django
 	#
-	mkdir -p /var/www/geonode/{htdocs,htdocs/media,wsgi/geonode/}
-	unzip -o /usr/share/geonode/geonode-client.zip -d /var/www/geonode/htdocs/ > /dev/null
-	cp /usr/share/geonode/bootstrap.py /var/www/geonode/wsgi/geonode/.
-	cp /usr/share/geonode/geonode-webapp.pybundle /var/www/geonode/wsgi/geonode/.
-	cp /usr/share/geonode/pavement.py /var/www/geonode/wsgi/geonode/.
-	cd /var/www/geonode/wsgi/geonode
+	mkdir -p /var/www/geonode/{htdocs,htdocs/static,htdocs/uploaded,wsgi/}
+	cp /usr/share/geonode/bootstrap.py /var/www/geonode/.
+	cp /usr/share/geonode/geonode-webapp.pybundle /var/www/geonode/.
+	cp /usr/share/geonode/pavement.py /var/www/geonode/.
+	cd /var/www/geonode
 	python bootstrap.py
+        mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
 
-	cd /var/www/geonode/wsgi/geonode/src/GeoNodePy
+        secretkey=$(randpass 8 0)
+
+	cd /var/www/geonode/src/GeoNodePy
 	patch -l -p3 < /usr/share/geonode/patch.django
 #	../../bin/python setup.py install
-
-	cat <<- EOF > /var/www/geonode/wsgi/geonode/src/GeoNodePy/geonode/local_settings.py
+	cat <<- EOF > /etc/default/geonode
 	DEBUG = TEMPLATE_DEBUG = False
 	MINIFIED_RESOURCES = True
 	SERVE_MEDIA=False
@@ -99,20 +100,15 @@ function configuredjango() {
 
 	LANGUAGE_CODE = 'en'
 
-	# the filesystem path where uploaded data should be saved
-	MEDIA_ROOT = "/var/www/geonode/htdocs/media/"
-
-	# the web url to get to those saved files
-	MEDIA_URL = SITEURL + "media/"
-
-	GEONODE_UPLOAD_PATH = "/var/www/geonode/htdocs/media/"
+	MEDIA_ROOT = "/var/www/geonode/htdocs/uploaded"
+	MEDIA_URL = SITEURL + "uploaded/"
+	STATIC_ROOT = "/var/www/geonode/htdocs/static/"
+	STATIC_URL = "/static/"
+	GEONODE_UPLOAD_PATH = MEDIA_ROOT + "geonode"
 
 	# secret key used in hashing, should be a long, unique string for each
 	# site.  See http://docs.djangoproject.com/en/1.2/ref/settings/#secret-key
-	#
-	# Here is one quick way to randomly generate a string for this use:
-	# python -c 'import random, string; print "".join(random.sample(string.printable.strip(), 50))'
-	SECRET_KEY = ''
+	SECRET_KEY = "$secretkey"
 
 	# The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
 	GEOSERVER_BASE_URL = SITEURL + "geoserver-geonode-dev/"
@@ -127,22 +123,23 @@ function configuredjango() {
 	# See http://code.google.com/apis/maps/signup.html
 	GOOGLE_API_KEY = ""
 
-#       GEOS_LIBRARY_PATH = '/usr/lib/libgeos_c.so.1.5.0'
-
 	DEFAULT_LAYERS_OWNER='admin'
 	GEONODE_CLIENT_LOCATION = SITEURL
 	EOF
 
 	cat <<- EOF > /var/www/geonode/wsgi/geonode.wsgi
 	import site, os
-
-	site.addsitedir('/var/www/geonode/wsgi/geonode/lib/python2.6/site-packages')
 	os.environ['DJANGO_SETTINGS_MODULE'] = 'geonode.settings'
 
 	from django.core.handlers.wsgi import WSGIHandler
 	application = WSGIHandler()
 	EOF
 
+        ln -s /etc/default/geonode /var/www/geonode/src/GeoNodePy/geonode/local_settings.py
+
+	cat <<- EOF > /usr/bin/geonode
+        /var/www/geonode/bin/django-admin.py $@ --settings=geonode.settings
+        EOF
 }
 
 function configureapache() {
@@ -152,43 +149,51 @@ function configureapache() {
 	a2dissite default
 	a2enmod proxy_http
 
+        sitedir=`/var/www/geonode/bin/python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
+
 	cat <<- EOF > /etc/apache2/sites-available/geonode
+        WSGIDaemonProcess geonode user=www-data threads=1 processes=4 python-path=$sitedir
 	<VirtualHost *:80>
 	   Servername $myhost
 	   ServerAdmin webmaster@localhost
-	   DocumentRoot /var/www/geonode/htdocs/
-	   <Directory />
-	       Options FollowSymLinks
-	       AllowOverride None
-	   </Directory>
-	   <Directory /var/www/geonode/htdocs>
-	       Options Indexes FollowSymLinks MultiViews
-	       AllowOverride None
-	       Order allow,deny
-	       allow from all
-	   </Directory>
+
+
+	   ErrorLog /var/log/apache2/error.geonode.log
+	   LogLevel warn
+	   CustomLog /var/log/apache2/access.geonode.log combined
+
+
+           <Directory "/var/www/geonode/wsgi/">
+               Allow from all
+           </Directory>
+
+           WSGIProcessGroup geonode
+	   WSGIPassAuthorization On
+	   WSGIScriptAlias / /var/www/geonode/wsgi/geonode.wsgi
+
+
+           <Directory "/var/www/geonode/htdocs/">
+               Order allow,deny
+               Options Indexes FollowSymLinks
+               Allow from all
+               IndexOptions FancyIndexing
+           </Directory>
+	   Alias /static/ /var/www/geonode/htdocs/static/
+	   Alias /uploads/ /var/www/geonode/htdocs/uploads/
+
+
+
 	   <Proxy *>
 	       Order allow,deny
 	       Allow from all
 	   </Proxy>
 
-	   ErrorLog /var/log/apache2/error.log
-	   LogLevel warn
-	   CustomLog /var/log/apache2/access.log combined
-
-	   Alias /geonode-client/ /var/www/geonode/htdocs/geonode-client/
-	   Alias /media/ /var/www/geonode/htdocs/media/
-	   Alias /admin-media/ /var/www/geonode/wsgi/geonode/lib/python2.6/site-packages/django/contrib/admin/media/
-
-	   WSGIPassAuthorization On
-	   WSGIScriptAlias / /var/www/geonode/wsgi/geonode.wsgi
-
 	   ProxyPreserveHost On
-
 	   ProxyPass /geoserver-geonode-dev http://localhost:8080/geoserver-geonode-dev
 	   ProxyPassReverse /geoserver-geonode-dev http://localhost:8080/geoserver-geonode-dev
 	   ProxyPass /geonetwork http://localhost:8080/geonetwork
 	   ProxyPassReverse /geonetwork http://localhost:8080/geonetwork
+
 	</VirtualHost>
 	EOF
 
@@ -227,9 +232,9 @@ case "$1" in
 	configureapache
 
 	#TODO configure a check to prevent rerunning this
-
-	/var/www/geonode/wsgi/geonode/bin/django-admin.py syncdb --noinput --settings=geonode.settings
-	/var/www/geonode/wsgi/geonode/bin/django-admin.py batchcreatesuperuser $username $password --settings=geonode.settings
+	geonode syncdb -noinput
+	geonode batchcreatesuperuser $username $password
+        geonode collectstatic -v0 --noinput
 
     ;;
 

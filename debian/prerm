@@ -45,6 +45,7 @@ case "$1" in
 	fi
 
 	rm -rf /usr/share/geonode/role.sql
+	rm -rf /usr/bin/geonode
     ;;
 
     failed-upgrade)
