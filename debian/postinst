@@ -50,9 +50,9 @@ function configuretomcat() {
 	# perform geonode specific customizations on geoserver
 	#
 	patch -l /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml  < /usr/share/geonode/patch.me
-	mkdir -p /opt/geoserver_data
-	cp -rp /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/* /opt/geoserver_data/.
-	chown tomcat6. /opt/geoserver_data/ -R
+	mkdir -p /var/lib/geoserver/data
+	cp -rp /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/* /var/lib/geoserver/data/.
+	chown tomcat6. /var/lib/geoserver/data/ -R
 	invoke-rc.d tomcat6 start
 
 }
