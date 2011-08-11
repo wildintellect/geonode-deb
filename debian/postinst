@@ -30,7 +30,7 @@ function configuretomcat() {
 	# configure tomcat
 	#
 	cat <<- EOF >> /etc/default/tomcat6
-	JAVA_OPTS="-Djava.awt.headless=true -Xmx1024m -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
+	JAVA_OPTS="-Djava.awt.headless=true -Xmx1024m -Xms1024M -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
 	EOF
 
 	# stop the tomcat process to prevent it from automatically unpacking the war files
@@ -159,6 +159,14 @@ function configureapache() {
 	a2dissite default
 	a2enmod proxy_http
 
+	cat <<- EOF > /var/www/geonode/robots.txt
+	User-agent: *
+	Disallow: /geoserver/
+	Disallow: /geoserver-geonode-dev/
+	Disallow: /geonetwork/
+	EOF
+
+
 	sitedir=`/var/lib/geonode/bin/python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
 
 	touch /etc/apache2/sites-available/geonode
@@ -168,29 +176,25 @@ function configureapache() {
 	    Servername $myhost
 	    ServerAdmin webmaster@localhost
 
-
-	    ErrorLog /var/log/apache2/error.geonode.log
+	    ErrorLog /var/log/apache2/error.log
 	    LogLevel warn
-	    CustomLog /var/log/apache2/access.geonode.log combined
-
-
-	    <Directory "/var/www/geonode/wsgi/">
-	         Allow from all
-	    </Directory>
+	    CustomLog /var/log/apache2/access.log combined
 
 	    WSGIProcessGroup geonode
 	    WSGIPassAuthorization On
 	    WSGIScriptAlias / /var/www/geonode/wsgi/geonode.wsgi
 
-
-	    <Directory "/var/www/geonode/htdocs/">
+	    <Directory "/var/www/geonode/">
 	        Order allow,deny
 	        Options Indexes FollowSymLinks
 	        Allow from all
 	        IndexOptions FancyIndexing
 	    </Directory>
+
+	    Alias /static/ /var/www/geonode/static/
 	    Alias /static/ /var/www/geonode/static/
 	    Alias /uploads/ /var/www/geonode/uploads/
+	    Alias /robots.txt /var/www/geonode/robots.txt
 
 	    <Proxy *>
 	      Order allow,deny
