@@ -18,7 +18,8 @@ install:
 	dh_installdirs
 	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
 	cp -rp $(CURDIR)/GeoNode-*/* $(CURDIR)/debian/geonode/usr/share/geonode/.
-	cp ${CURDIR}/debian/patch.me $(CURDIR)/debian/geonode/usr/share/geonode/.
+	cp ${CURDIR}/debian/patch.geoserver $(CURDIR)/debian/geonode/usr/share/geonode/.
+	cp ${CURDIR}/debian/patch.geonetwork $(CURDIR)/debian/geonode/usr/share/geonode/.
 	cp ${CURDIR}/debian/patch.django $(CURDIR)/debian/geonode/usr/share/geonode/.
 binary-indep: build install
 

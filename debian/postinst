@@ -49,7 +49,10 @@ function configuretomcat() {
 	# perform geonode specific customizations on geoserver
 	#
 	patch -l /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
+#        sed -i "s/{{GEONODE_BASE_URL}}/$myhost" /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml
 	patch -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/web.xml  < /usr/share/geonode/patch.geonetwork
+#        sed -i "s/{{GEONODE_DATABASE_PASSWORD}}/$psqlpass" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+
 	mkdir -p /var/lib/geoserver/data
 	cp -rp /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/* /var/lib/geoserver/data/.
 	chown tomcat6. /var/lib/geoserver/data/ -R
@@ -146,8 +149,7 @@ function configuredjango() {
 	from django.core.handlers.wsgi import WSGIHandler
 	application = WSGIHandler()
 	EOF
-        sed -i "s/{{GEONODE_DATABASE_PASSWORD}}/$psqlpass" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
-        sed -i "s/{{GEONODE_BASE_URL}}/$myhost" /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml
+
 	ln -s /etc/default/geonode /var/lib/geonode/src/GeoNodePy/geonode/local_settings.py
 	rm -rf /usr/bin/geonode
 	touch /usr/bin/geonode
