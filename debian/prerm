@@ -28,7 +28,14 @@ case "$1" in
 		invoke-rc.d apache2 start
 	fi
 
-	rm -rf /var/www/geonode 
+	rm -rf /var/lib/geonode
+	rm -rf /var/www/geonode/wsgi
+	rm -rf /var/www/geonode/static
+
+	# The other files that the installer created but we do not want to blow away are:
+	#/etc/default/geonode
+	#/var/www/geonode/uploaded
+	#/var/lib/geoserver/data
 
 	# turn off error trapping, one of these may fail
 	set +e
