@@ -27,6 +27,7 @@ function randpass() {
 
 function configuretomcat() {
 
+        geonetworkpass=$(randpass 8 0)
 	# configure tomcat
 	#
 	cat <<- EOF >> /etc/default/tomcat6
@@ -71,14 +72,17 @@ function configuredjango() {
 	#
 	mkdir -p /var/www/geonode/{static,uploaded,wsgi}
 	mkdir -p /var/lib/geonode
-	cp /usr/share/geonode/bootstrap.py /var/lib/geonode/.
-	cp /usr/share/geonode/geonode-webapp.pybundle /var/lib/geonode/.
-	cp /usr/share/geonode/pavement.py /var/lib/geonode/.
 	cd /var/lib/geonode
-	python bootstrap.py
+	virtualenv .
+	source bin/activate
+	#FIXME: GeoNode should not error if the geoserver pass is defined in local_settings.py
+        touch /var/lib/geonode/geoserver_token
+
+	pip install /usr/share/geonode/geonode-webapp.pybundle
         mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
 
         secretkey=$(randpass 8 0)
+        geoserverpass=$(randpass 8 0)
 
 	cd /var/lib/geonode/src/GeoNodePy
 	patch -l -p3 < /usr/share/geonode/patch.django
@@ -118,7 +122,8 @@ function configuredjango() {
 	GEONETWORK_BASE_URL = SITEURL + "geonetwork/"
 
 	# The username and password for a user with write access to GeoNetwork
-	GEONETWORK_CREDENTIALS = "admin", 'admin'
+	GEONETWORK_CREDENTIALS = "admin", '$geonetworkpass'
+	GEOSERVER_CREDENTIALS = "admin", '$geoserverpass'
 
 	# A Google Maps API key is needed for the 3D Google Earth view of maps
 	# See http://code.google.com/apis/maps/signup.html
