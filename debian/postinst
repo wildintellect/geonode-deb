@@ -49,9 +49,10 @@ function configuretomcat() {
 	# perform geonode specific customizations on geoserver
 	#
 	patch -l /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
-#        sed -i "s/{{GEONODE_BASE_URL}}/$myhost" /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml
-	patch -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/web.xml  < /usr/share/geonode/patch.geonetwork
-#        sed -i "s/{{GEONODE_DATABASE_PASSWORD}}/$psqlpass" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+        sed -i "s/THE_GEONODE_BASE_URL/$myhost/g" /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml
+	patch -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml  < /usr/share/geonode/patch.geonetwork
+        sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+        sed -i "s/jdbc:postgresql:geonetwork/jdbc:postgresql:geonode/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 
 	mkdir -p /var/lib/geoserver/data
 	cp -rp /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/* /var/lib/geoserver/data/.
@@ -104,6 +105,16 @@ function configuredjango() {
 	DATABASE_PASSWORD = "$psqlpass"
 	DATABASE_HOST = 'localhost'
 	DATABASE_PORT = '5432'
+
+	# Make geonode upload vector layers directly to postgis
+	DB_DATASTORE_NAME = DATABASE_NAME
+	DB_DATASTORE_USER = DATABASE_USER
+	DB_DATASTORE_PASSWORD = DATABASE_PASSWORD
+	DB_DATASTORE_HOST = DATABASE_HOST
+	DB_DATASTORE_PORT = DATABASE_PORT
+	DB_DATASTORE_TYPE='postgis'
+
+	DB_DATASTORE=True
 
 	LANGUAGE_CODE = 'en'
 
@@ -246,8 +257,8 @@ case "$1" in
 		password="admin"
 	fi
 
-	configuretomcat
 	configurepostgres
+	configuretomcat
 	configuredjango
 	configureapache
 
