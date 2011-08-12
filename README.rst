@@ -43,3 +43,10 @@ If dpkg reports an error about unmet dependencies, you can issue the following
 command to fetch dependencies and re-attempt the installation::
 
     apt-get install -f
+
+Developing
+----------
+
+While developing this command is very useful to reset and environment and reinstall the package in development::
+
+    sudo apt-get remove -y tomcat6 geonode;sudo rm -rf /var/lib/tomcat6; sudo apt-get install -y tomcat6;rm -rf ../geonode_*; debuild clean;debuild --no-lintian -uc -us; sudo dpkg -i ../geonode*.deb
