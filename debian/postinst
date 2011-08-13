@@ -213,7 +213,6 @@ function configureapache() {
 	    </Directory>
 
 	    Alias /static/ /var/www/geonode/static/
-	    Alias /static/ /var/www/geonode/static/
 	    Alias /uploads/ /var/www/geonode/uploads/
 	    Alias /robots.txt /var/www/geonode/robots.txt
 
