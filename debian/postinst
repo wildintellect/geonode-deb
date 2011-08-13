@@ -64,8 +64,19 @@ function configuretomcat() {
 function configurepostgres() {
 	# configure postgres user and database
 	#
-        su - postgres /usr/share/geonode/create_template_postgis-debian.sh
-	su - postgres -c "createdb geonode -T template_postgis"
+        if su - postgres -c 'psql -l | grep -q template_postgis'
+        then
+	    echo
+	else
+	    su - postgres /usr/share/geonode/create_template_postgis-debian.sh
+	fi
+
+        if su - postgres -c 'psql -l | grep -q geonode'
+	then
+	    echo 'Not creating geonode database because it already exists'
+	else
+	    su - postgres -c "createdb geonode -T template_postgis"
+	fi
 	psqlpass=$(randpass 8 0)
 	echo "CREATE ROLE geonode with login password '$psqlpass' SUPERUSER INHERIT;" > /usr/share/geonode/role.sql
 	su - postgres -c "psql < /usr/share/geonode/role.sql"
