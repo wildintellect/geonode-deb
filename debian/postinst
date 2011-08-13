@@ -114,7 +114,8 @@ function configuredjango() {
 	DB_DATASTORE_PORT = DATABASE_PORT
 	DB_DATASTORE_TYPE='postgis'
 
-	DB_DATASTORE=True
+
+	DB_DATASTORE=False
 
 	LANGUAGE_CODE = 'en'
 
