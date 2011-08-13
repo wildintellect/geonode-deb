@@ -50,7 +50,7 @@ function configuretomcat() {
 	#
 	patch -l /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
         sed -i "s/THE_GEONODE_BASE_URL/$myhost/g" /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml
-	patch -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml  < /usr/share/geonode/patch.geonetwork
+	patch -R -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml  < /usr/share/geonode/patch.geonetwork
         sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
         sed -i "s/jdbc:postgresql:geonetwork/jdbc:postgresql:geonode/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 
