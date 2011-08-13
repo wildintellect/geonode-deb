@@ -31,6 +31,6 @@ index 0000000..f74a4db
 +        except Exception, e:
 +            print "Username and password must be provided"
 +        user, created = User.objects.get_or_create(username=username)
-+        user.is_superuser = True
++        user.is_superuser = True;user.is_staff=True
 +        user.set_password(password)
 +        user.save()
