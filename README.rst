@@ -44,9 +44,18 @@ command to fetch dependencies and re-attempt the installation::
 
     apt-get install -f
 
-Developing
-----------
+Step by step instructions for Ubuntu 10.04 and 11.04
+----------------------------------------------------
 
-While developing this command is very useful to reset and environment and reinstall the package in development::
+Open a terminal and run the following commands::
 
-    sudo apt-get remove -y tomcat6 geonode;sudo rm -rf /var/lib/tomcat6; sudo apt-get install -y tomcat6;rm -rf ../geonode_*; debuild clean;debuild --no-lintian -uc -us; sudo dpkg -i ../geonode*.deb
+    sudo apt-get update
+    sudo apt-get install -y git-core debhelper devscripts
+    git clone git://github.com/GFDRR/geonode-deb.git
+    cd geonode-deb
+    wget http://dev.geonode.org/release/GeoNode-1.1-beta2.tar.gz
+    tar zxvf GeoNode-1.1-beta2.tar.gz
+    debuild --no-lintian -us -uc
+    sudo dpkg -i ../geonode_1.1.beta+2_all.deb
+    sudo apt-get install -f
+    sudo dpkg -i ../geonode_1.1.beta+2_all.de
