@@ -139,13 +139,6 @@ function configuredjango() {
 		'PORT': DATABASE_PORT,
 	    }
 	}
-	DATABASES = {DATABASE_ENGINE = 'postgresql_psycopg2'
-	DATABASE_NAME = 'geonode'
-	DATABASE_USER = 'geonode'
-	DATABASE_PASSWORD = "ClqD0fvE"
-	DATABASE_HOST = 'localhost'
-	DATABASE_PORT = '5432'
-
 
 	DB_DATASTORE=True
 
