@@ -43,19 +43,19 @@ function configuretomcat() {
 	cp /usr/share/geonode/geonetwork.war /var/lib/tomcat6/webapps
 	unzip -o /var/lib/tomcat6/webapps/geonetwork.war -d /var/lib/tomcat6/webapps/geonetwork > /dev/null
 	chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
-	cp /usr/share/geonode/geoserver-geonode-dev.war /var/lib/tomcat6/webapps
-	unzip -o /var/lib/tomcat6/webapps/geoserver-geonode-dev.war -d /var/lib/tomcat6/webapps/geoserver-geonode-dev > /dev/null
+	cp /usr/share/geonode/geoserver.war /var/lib/tomcat6/webapps
+	unzip -o /var/lib/tomcat6/webapps/geoserver.war -d /var/lib/tomcat6/webapps/geoserver > /dev/null
 
 	# perform geonode specific customizations on geoserver
 	#
-	patch -l /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
-        sed -i "s/THE_GEONODE_BASE_URL/$myhost/g" /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml
+	patch -l /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
+        sed -i "s/THE_GEONODE_BASE_URL/$myhost/g" /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
 	patch -R -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml  < /usr/share/geonode/patch.geonetwork
         sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
         sed -i "s/jdbc:postgresql:geonetwork/jdbc:postgresql:geonode/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 
 	mkdir -p /var/lib/geoserver/data
-	cp -rp /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/* /var/lib/geoserver/data/.
+	cp -rp /var/lib/tomcat6/webapps/geoserver/data/* /var/lib/geoserver/data/.
 	chown tomcat6. /var/lib/geoserver/data/ -R
 	invoke-rc.d tomcat6 start
 
@@ -156,7 +156,7 @@ function configuredjango() {
 	SECRET_KEY = "$secretkey"
 
 	# The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
-	GEOSERVER_BASE_URL = SITEURL + "geoserver-geonode-dev/"
+	GEOSERVER_BASE_URL = SITEURL + "geoserver/"
 
 	# The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
 	GEONETWORK_BASE_URL = SITEURL + "geonetwork/"
@@ -207,7 +207,6 @@ function configureapache() {
 	cat <<- EOF > /var/www/geonode/robots.txt
 	User-agent: *
 	Disallow: /geoserver/
-	Disallow: /geoserver-geonode-dev/
 	Disallow: /geonetwork/
 	EOF
 
@@ -246,8 +245,8 @@ function configureapache() {
 	    </Proxy>
 
 	    ProxyPreserveHost On
-	    ProxyPass /geoserver-geonode-dev http://localhost:8080/geoserver-geonode-dev
-	    ProxyPassReverse /geoserver-geonode-dev http://localhost:8080/geoserver-geonode-dev
+	    ProxyPass /geoserver http://localhost:8080/geoserver
+	    ProxyPassReverse /geoserver http://localhost:8080/geoserver
 	    ProxyPass /geonetwork http://localhost:8080/geonetwork
 	    ProxyPassReverse /geonetwork http://localhost:8080/geonetwork
 	</VirtualHost>
