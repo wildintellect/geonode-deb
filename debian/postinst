@@ -90,11 +90,10 @@ function configuredjango() {
 	mkdir -p /var/www/geonode/{static,uploaded,wsgi}
 	mkdir -p /var/lib/geonode
 	cd /var/lib/geonode
-	export VIRTUALENV_USE_DISTRIBUTE=1
-	virtualenv .
-	source bin/activate
-	#FIXME: GeoNode should not error if the geoserver pass is defined in local_settings.py
-        touch /var/lib/geonode/geoserver_token
+	cp /usr/share/geonode/geonode-webapp.pybundle .
+	cp /usr/share/geonode/bootstrap.py .
+	cp /usr/share/geonode/pavement.py .
+	python bootstrap.py
 
 	pip install /usr/share/geonode/geonode-webapp.pybundle
         mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
