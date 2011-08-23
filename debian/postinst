@@ -215,7 +215,7 @@ function configureapache() {
 
 	touch /etc/apache2/sites-available/geonode
 	cat <<- EOF >> /etc/apache2/sites-available/geonode
-	WSGIDaemonProcess geonode user=www-data threads=1 processes=4 python-path=$sitedir
+	WSGIDaemonProcess geonode user=www-data threads=15 processes=2 python-path=$sitedir
 	<VirtualHost *:80>
 	    Servername $myhost
 	    ServerAdmin webmaster@localhost
