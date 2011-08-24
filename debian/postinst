@@ -95,7 +95,6 @@ function configuredjango() {
 	cp /usr/share/geonode/pavement.py .
 	python bootstrap.py
 
-	pip install /usr/share/geonode/geonode-webapp.pybundle
         mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
 
         secretkey=$(randpass 8 0)
@@ -149,6 +148,8 @@ function configuredjango() {
 	STATIC_URL = "/static/"
 	GEONODE_UPLOAD_PATH = MEDIA_ROOT + "geonode"
 	GEONODE_CLIENT_LOCATION = STATIC_URL + "geonode/"
+
+	STATICFILES_STORAGE = 'staticfiles.storage.StaticFilesStorage'
 
 	# secret key used in hashing, should be a long, unique string for each
 	# site.  See http://docs.djangoproject.com/en/1.2/ref/settings/#secret-key
