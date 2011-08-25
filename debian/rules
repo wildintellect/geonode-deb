@@ -27,12 +27,12 @@ install:
 	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/static
 	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/uploaded
 	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/wsgi
-	cp -rp $(CURDIR)/debian/geonode.wsgi $(CURDIR)/debian/geonode/var/www/geonode/wsgi/
+	cp -rp $(CURDIR)/debian/support/geonode.wsgi $(CURDIR)/debian/geonode/var/www/geonode/wsgi/
 	mkdir -p $(CURDIR)/debian/geonode/etc/apache2/sites-available/
-	cp -rp $(CURDIR)/debian/geonode.apache $(CURDIR)/debian/geonode/etc/apache2/sites-available/geonode
+	cp -rp $(CURDIR)/debian/support/geonode.apache $(CURDIR)/debian/geonode/etc/apache2/sites-available/geonode
 	mkdir -p $(CURDIR)/debian/geonode/etc/default
-	cp -rp $(CURDIR)/debian/geonode.local_settings $(CURDIR)/debian/geonode/etc/default/geonode
-	cp -rp $(CURDIR)/debian/geonode.robots $(CURDIR)/debian/geonode/var/www/geonode/robots.txt
+	cp -rp $(CURDIR)/debian/support/geonode.local_settings $(CURDIR)/debian/geonode/etc/default/geonode
+	cp -rp $(CURDIR)/debian/support/geonode.robots $(CURDIR)/debian/geonode/var/www/geonode/robots.txt
 	# Third step is to unpack the pybundle and put the virtualenv in the right place
 	mkdir -p $(CURDIR)/debian/geonode/var/lib/geonode
 	cp -rp $(CURDIR)/GeoNode-*/pavement.py $(CURDIR)/debian/geonode/var/lib/geonode/
@@ -40,13 +40,13 @@ install:
 	cp -rp $(CURDIR)/GeoNode-*/geonode-webapp.pybundle $(CURDIR)/debian/geonode/var/lib/geonode/
 	# Fourth step is to install the binary
 	mkdir -p $(CURDIR)/debian/geonode/usr/bin/
-	cp -rp $(CURDIR)/debian/geonode.binary $(CURDIR)/debian/geonode/usr/bin/geonode
+	cp -rp $(CURDIR)/debian/support/geonode.binary $(CURDIR)/debian/geonode/usr/bin/geonode
 	# Last step is to copy the scripts and patches that would be used in postinst	
 	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
-	cp ${CURDIR}/debian/patch.geoserver $(CURDIR)/debian/geonode/usr/share/geonode/
-	cp ${CURDIR}/debian/patch.geonetwork $(CURDIR)/debian/geonode/usr/share/geonode/
-	cp ${CURDIR}/debian/geonode.admin $(CURDIR)/debian/geonode/usr/share/geonode/admin.json
-	cp ${CURDIR}/debian/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/
+	cp ${CURDIR}/debian/patches/patch.geoserver $(CURDIR)/debian/geonode/usr/share/geonode/
+	cp ${CURDIR}/debian/patches/patch.geonetwork $(CURDIR)/debian/geonode/usr/share/geonode/
+	cp ${CURDIR}/debian/patches/geonode.admin $(CURDIR)/debian/geonode/usr/share/geonode/admin.json
+	cp ${CURDIR}/debian/support/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/
 binary-indep: build install
 
 binary-arch: build install
