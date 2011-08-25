@@ -59,13 +59,12 @@ function configurepostgres() {
 	psqlpass=$(randpass 8 0)
         if su - postgres -c 'psql -l | grep -q geonode'
 	then
-	    echo 'Not creating geonode database because it already exists'
-	    echo "ALTER ROLE geonode with password '$psqlpass';" > /usr/share/geonode/role.sql
+	    echo 'Not creating geonode database or user because it already exists'
 	else
 	    su - postgres -c "createdb geonode -T template_postgis"
 	    echo "CREATE ROLE geonode with login password '$psqlpass' SUPERUSER INHERIT;" > /usr/share/geonode/role.sql
+	    su - postgres -c "psql < /usr/share/geonode/role.sql"
 	fi
-	su - postgres -c "psql < /usr/share/geonode/role.sql"
 
 }
 
