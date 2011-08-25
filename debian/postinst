@@ -39,9 +39,9 @@ function configuretomcat() {
         sed -i "s/jdbc:postgresql:geonetwork/jdbc:postgresql:geonode/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 
         # and set the tomcat user as the owner
-        chown tomcat6. $(CURDIR)/debian/geonode/var/lib/geoserver/data/ -R
-        chown tomcat6. $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geonetwork -R
-        chown tomcat6. $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver -R
+        chown tomcat6. /var/lib/geoserver/data/ -R
+        chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
+        chown tomcat6. /var/lib/tomcat6/webapps/geoserver -R
 
 	invoke-rc.d tomcat6 restart
 }
