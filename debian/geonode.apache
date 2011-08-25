@@ -1,4 +1,4 @@
-WSGIDaemonProcess geonode user=www-data threads=15 processes=2 python-path=REPLACE_WITH_PATH
+WSGIDaemonProcess geonode user=www-data threads=15 processes=2 python-path=REPLACE_WITH_SITEDIR
 <VirtualHost *:80>
     Servername localhost
     ServerAdmin webmaster@localhost

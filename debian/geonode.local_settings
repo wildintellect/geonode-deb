@@ -8,7 +8,7 @@ SITEURL = 'http:/localhost/'
 DATABASE_ENGINE = 'postgresql_psycopg2'
 DATABASE_NAME = 'geonode'
 DATABASE_USER = 'geonode'
-DATABASE_PASSWORD = ''
+DATABASE_PASSWORD = 'THE_DATABASE_PASSWORD'
 DATABASE_HOST = 'localhost'
 DATABASE_PORT = '5432'
 
@@ -47,7 +47,7 @@ STATICFILES_STORAGE = 'staticfiles.storage.StaticFilesStorage'
 
 # secret key used in hashing, should be a long, unique string for each
 # site.  See http://docs.djangoproject.com/en/1.2/ref/settings/#secret-key
-SECRET_KEY = ""
+SECRET_KEY = 'THE_SECRET_KEY'
 
 # The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
 GEOSERVER_BASE_URL = SITEURL + 'geoserver/'
@@ -57,7 +57,7 @@ GEONETWORK_BASE_URL = SITEURL + 'geonetwork/'
 
 # The username and password for a user with write access to GeoNetwork
 GEONETWORK_CREDENTIALS = 'admin', 'admin'
-GEOSERVER_CREDENTIALS = 'geoserver', 'geoserver'
+GEOSERVER_CREDENTIALS = 'geoserver', 'THE_GEOSERVER_PASSWORD'
 
 # A Google Maps API key is needed for the 3D Google Earth view of maps
 # See http://code.google.com/apis/maps/signup.html
