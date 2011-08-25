@@ -39,7 +39,7 @@ install:
 	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
 	cp ${CURDIR}/debian/patch.geoserver $(CURDIR)/debian/geonode/usr/share/geonode/.
 	cp ${CURDIR}/debian/patch.geonetwork $(CURDIR)/debian/geonode/usr/share/geonode/.
-	cp ${CURDIR}/debian/patch.django $(CURDIR)/debian/geonode/usr/share/geonode/.
+	cp ${CURDIR}/debian/geonode.admin $(CURDIR)/debian/geonode/usr/share/geonode/admin.json
 	cp ${CURDIR}/debian/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/.
 binary-indep: build install
 
