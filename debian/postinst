@@ -98,7 +98,10 @@ function configureapache() {
 	a2dissite default
 	a2enmod proxy_http
 	sitedir=`/var/lib/geonode/bin/python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
-        sed -i "s/REPLACE_WITH_SITEDIR/$sitedir/g" /etc/apache2/sites-available/geonode
+        
+	sed -i '1d' /etc/apache2/sites-available/geonode
+	sed -i "1i WSGIDaemonProcess geonode user=www-data threads=15 processes=2 python-path=$sitedir" /etc/apache2/sites-available/geonode
+
 	a2ensite geonode
 	invoke-rc.d apache2 restart
 }
