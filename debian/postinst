@@ -28,24 +28,10 @@ function randpass() {
 function configuretomcat() {
 
 	# configure tomcat
-	#
+	# FIXME(Ariel): Make this a patch
 	cat <<- EOF >> /etc/default/tomcat6
 	JAVA_OPTS="-Djava.awt.headless=true -Xmx1024m -Xms1024M -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
 	EOF
-
-	# stop the tomcat process to prevent it from automatically unpacking the war files
-	#
-	invoke-rc.d tomcat6 stop
-
-	# set file permissions and copy the war files in
-	#
-	chown tomcat6. /usr/share/geonode/*.war
-	cp /usr/share/geonode/geonetwork.war /var/lib/tomcat6/webapps
-	unzip -o /var/lib/tomcat6/webapps/geonetwork.war -d /var/lib/tomcat6/webapps/geonetwork > /dev/null
-	chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
-	cp /usr/share/geonode/geoserver.war /var/lib/tomcat6/webapps
-	unzip -o /var/lib/tomcat6/webapps/geoserver.war -d /var/lib/tomcat6/webapps/geoserver > /dev/null
-
 	# perform geonode specific customizations on geoserver
 	#
 	patch -l /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
@@ -54,11 +40,12 @@ function configuretomcat() {
         sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
         sed -i "s/jdbc:postgresql:geonetwork/jdbc:postgresql:geonode/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 
-	mkdir -p /var/lib/geoserver/data
-	cp -rp /var/lib/tomcat6/webapps/geoserver/data/* /var/lib/geoserver/data/.
-	chown tomcat6. /var/lib/geoserver/data/ -R
-	invoke-rc.d tomcat6 start
+        # and set the tomcat user as the owner
+        chown tomcat6. $(CURDIR)/debian/geonode/var/lib/geoserver/data/ -R
+        chown tomcat6. $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geonetwork -R
+        chown tomcat6. $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver -R
 
+	invoke-rc.d tomcat6 restart
 }
 
 function configurepostgres() {
@@ -87,114 +74,20 @@ function configurepostgres() {
 function configuredjango() {
 	# set up django
 	#
-	mkdir -p /var/www/geonode/{static,uploaded,wsgi}
-	mkdir -p /var/lib/geonode
 	cd /var/lib/geonode
-	cp /usr/share/geonode/geonode-webapp.pybundle .
-	cp /usr/share/geonode/bootstrap.py .
-	cp /usr/share/geonode/pavement.py .
 	python bootstrap.py
 
         mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
 
-        secretkey=$(randpass 8 0)
+	# FIXME(Ariel): Put geoserverpass and secretkey in local_settings
+        secretkey=$(randpass 18 0)
         geoserverpass=$(randpass 8 0)
 
-	cd /var/lib/geonode/src/GeoNodePy
-	patch -l -p3 < /usr/share/geonode/patch.django
-
-	cat <<- EOF > /etc/default/geonode
-	DEBUG = TEMPLATE_DEBUG = False
-	MINIFIED_RESOURCES = True
-	SERVE_MEDIA=False
-
-	SITENAME = "GeoNode"
-	SITEURL = "http://$myhost/"
-
-	DATABASE_ENGINE = 'postgresql_psycopg2'
-	DATABASE_NAME = 'geonode'
-	DATABASE_USER = 'geonode'
-	DATABASE_PASSWORD = "$psqlpass"
-	DATABASE_HOST = 'localhost'
-	DATABASE_PORT = '5432'
-
-	# Make geonode upload vector layers directly to postgis
-	DB_DATASTORE_NAME = DATABASE_NAME
-	DB_DATASTORE_USER = DATABASE_USER
-	DB_DATASTORE_PASSWORD = DATABASE_PASSWORD
-	DB_DATASTORE_HOST = DATABASE_HOST
-	DB_DATASTORE_PORT = DATABASE_PORT
-	DB_DATASTORE_TYPE='postgis'
-
-	# Django 1.3 compatibility
-	DATABASES = {
-	    'default': {
-	        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': DATABASE_NAME,
-		'USER': DATABASE_USER,
-		'PASSWORD': DATABASE_PASSWORD,
-		'HOST': DATABASE_HOST,
-		'PORT': DATABASE_PORT,
-	    }
-	}
-
-	DB_DATASTORE=True
-
-	LANGUAGE_CODE = 'en'
-
-	MEDIA_ROOT = "/var/www/geonode/uploaded"
-	MEDIA_URL = SITEURL + "uploaded/"
-	STATIC_ROOT = "/var/www/geonode/static/"
-	STATIC_URL = "/static/"
-	GEONODE_UPLOAD_PATH = MEDIA_ROOT + "geonode"
-	GEONODE_CLIENT_LOCATION = STATIC_URL + "geonode/"
-
-	STATICFILES_STORAGE = 'staticfiles.storage.StaticFilesStorage'
-
-	# secret key used in hashing, should be a long, unique string for each
-	# site.  See http://docs.djangoproject.com/en/1.2/ref/settings/#secret-key
-	SECRET_KEY = "$secretkey"
-
-	# The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
-	GEOSERVER_BASE_URL = SITEURL + "geoserver/"
-
-	# The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
-	GEONETWORK_BASE_URL = SITEURL + "geonetwork/"
-
-	# The username and password for a user with write access to GeoNetwork
-	GEONETWORK_CREDENTIALS = "admin", "admin"
-	GEOSERVER_CREDENTIALS = "admin", '$geoserverpass'
-
-	# A Google Maps API key is needed for the 3D Google Earth view of maps
-	# See http://code.google.com/apis/maps/signup.html
-	GOOGLE_API_KEY = ""
-
-	DEFAULT_LAYERS_OWNER='admin'
-
-	import logging
-	_logger = logging.getLogger("geonode.maps")
-	_logger.addHandler(logging.StreamHandler())
-	# available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-	# The earlier a level appears in this list, the more output it will produce in the log file.
-	_logger.setLevel(logging.WARNING)
-	EOF
-
-	cat <<- EOF > /var/www/geonode/wsgi/geonode.wsgi
-	import site, os
-	os.environ['DJANGO_SETTINGS_MODULE'] = 'geonode.settings'
-
-	from django.core.handlers.wsgi import WSGIHandler
-	application = WSGIHandler()
-	EOF
-
 	ln -s /etc/default/geonode /var/lib/geonode/src/GeoNodePy/geonode/local_settings.py
-	rm -rf /usr/bin/geonode
-	touch /usr/bin/geonode
-	echo 'source /var/lib/geonode/bin/activate' >> /usr/bin/geonode
-	echo 'django-admin.py $@ --settings=geonode.settings' >> /usr/bin/geonode
-
-	chown 755 /usr/bin/geonode
 	chmod +x /usr/bin/geonode
+	/usr/bin/geonode syncdb --noinput
+	/usr/bin/geonode collectstatic -v0 --noinput
+	/usr/bin/geonode loaddata /usr/share/geonode/admin.json
 }
 
 function configureapache() {
@@ -203,94 +96,19 @@ function configureapache() {
 	chown www-data -R /var/www/geonode/
 	a2dissite default
 	a2enmod proxy_http
-
-	cat <<- EOF > /var/www/geonode/robots.txt
-	User-agent: *
-	Disallow: /geoserver/
-	Disallow: /geonetwork/
-	EOF
-
-
+	# FIXME(Ariel) Put $sitedir in the geonode apache config file
 	sitedir=`/var/lib/geonode/bin/python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
 
-	touch /etc/apache2/sites-available/geonode
-	cat <<- EOF >> /etc/apache2/sites-available/geonode
-	WSGIDaemonProcess geonode user=www-data threads=15 processes=2 python-path=$sitedir
-	<VirtualHost *:80>
-	    Servername $myhost
-	    ServerAdmin webmaster@localhost
-
-	    ErrorLog /var/log/apache2/error.log
-	    LogLevel warn
-	    CustomLog /var/log/apache2/access.log combined
-
-	    WSGIProcessGroup geonode
-	    WSGIPassAuthorization On
-	    WSGIScriptAlias / /var/www/geonode/wsgi/geonode.wsgi
-
-	    <Directory "/var/www/geonode/">
-	        Order allow,deny
-	        Options Indexes FollowSymLinks
-	        Allow from all
-	        IndexOptions FancyIndexing
-	    </Directory>
-
-	    Alias /static/ /var/www/geonode/static/
-	    Alias /uploads/ /var/www/geonode/uploads/
-	    Alias /robots.txt /var/www/geonode/robots.txt
-
-	    <Proxy *>
-	      Order allow,deny
-	      Allow from all
-	    </Proxy>
-
-	    ProxyPreserveHost On
-	    ProxyPass /geoserver http://localhost:8080/geoserver
-	    ProxyPassReverse /geoserver http://localhost:8080/geoserver
-	    ProxyPass /geonetwork http://localhost:8080/geonetwork
-	    ProxyPassReverse /geonetwork http://localhost:8080/geonetwork
-	</VirtualHost>
-	EOF
-
-	ln -sf /etc/apache2/sites-available/geonode /etc/apache2/sites-enabled/0000-geonode
-
+	a2ensite geonode
 	invoke-rc.d apache2 restart
-
-
 }
 case "$1" in
     configure)
-
-	db_get geonode/hostname
-        if [ "$RET" ]; then
-                myhost="$RET"
-        else
-		myhost="localhost"
-	fi
-
-	db_get geonode/django_user
-	if [ "$RET" ]; then
-		username="$RET"
-	else
-		username="admin"
-	fi
-	db_get geonode/django_password
-	if [ "$RET" ]; then
-		password="$RET"
-	else
-		password="admin"
-	fi
 
 	configurepostgres
 	configuretomcat
 	configuredjango
 	configureapache
-
-	#TODO configure a check to prevent rerunning this
-	/usr/bin/geonode syncdb --noinput
-	/usr/bin/geonode batchcreatesuperuser $username $password
-	/usr/bin/geonode collectstatic -v0 --noinput
-
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

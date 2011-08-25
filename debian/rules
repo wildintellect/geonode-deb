@@ -16,8 +16,27 @@ install:
 	dh_testroot
 	dh_prep
 	dh_installdirs
+	# First step is to unpack the wars in the tomcat webapps dir
+	mkdir -p $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/{geoserver,geonetwork}
+	unzip $(CURDIR)/GeoNode-*/geoserver.war -d $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver
+	unzip $(CURDIR)/GeoNode-*/geonetwork.war -d $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geonetwork
+	mkdir -p $(CURDIR)/debian/geonode/var/lib/geoserver/data
+	cp -rp $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver/data/* $(CURDIR)/debian/geonode/var/lib/geoserver/data/.
+	# Second step is to put the apache wsgi and conf files in the right places
+	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/{static,uploaded,wsgi}
+	cp -rp $(CURDIR)/debian/geonode.wsgi $(CURDIR)/debian/geonode/var/www/geonode/wsgi/.
+	cp -rp $(CURDIR)/debian/geonode.apache $(CURDIR)/debian/geonode/etc/apache2/sites-available/geonode
+	cp -rp $(CURDIR)/debian/geonode.local_settings $(CURDIR)/debian/geonode/etc/default/geonode
+	cp -rp $(CURDIR)/debian/geonode.robots $(CURDIR)/debian/geonode/var/www/geonode/robots.txt
+	# Third step is to unpack the pybundle and put the virtualenv in the right place
+	mkdir -p $(CURDIR)/debian/geonode/var/lib/geonode
+	cp -rp $(CURDIR)/GeoNode-*/pavement.py $(CURDIR)/debian/geonode/var/lib/geonode/.
+	cp -rp $(CURDIR)/GeoNode-*/bootstrap.py $(CURDIR)/debian/geonode/var/lib/geonode/.
+	cp -rp $(CURDIR)/GeoNode-*/geonode-webapp.pybundle $(CURDIR)/debian/var/lib/geonode/.
+	# Fourth step is to install the binary
+	cp -rp $(CURDIR)/debian/geonode.binary $(CURDIR)/debian/geonode/usr/bin/geonode
+	# Last step is to copy the scripts and patches that would be used in postinst	
 	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
-	cp -rp $(CURDIR)/GeoNode-*/* $(CURDIR)/debian/geonode/usr/share/geonode/.
 	cp ${CURDIR}/debian/patch.geoserver $(CURDIR)/debian/geonode/usr/share/geonode/.
 	cp ${CURDIR}/debian/patch.geonetwork $(CURDIR)/debian/geonode/usr/share/geonode/.
 	cp ${CURDIR}/debian/patch.django $(CURDIR)/debian/geonode/usr/share/geonode/.
