@@ -19,26 +19,8 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-	a2dissite geonode
-	a2ensite default
-	invoke-rc.d apache2 restart
-
-	rm -rf /var/lib/geonode
-	rm -rf /var/www/geonode/wsgi
-	rm -rf /var/www/geonode/static
+	invoke-rc.d apache2 stop
 	invoke-rc.d tomcat6 stop
-	rm -rf  /var/lib/tomcat6/webapps/geoserver /var/lib/tomcat6/geonetwork
-	invoke-rc.d tomcat6 start
-
-	rm -rf /usr/share/geonode/role.sql
-	rm -rf /usr/share/geonode/admin.json
-	rm -rf /usr/share/geonode/patch*
-	rm -rf /usr/bin/geonode
-
-	# The other files that the installer created but we do not want to blow away are:
-	#/etc/default/geonode
-	#/var/www/geonode/uploaded
-	#/var/lib/geoserver/data
     ;;
 
     failed-upgrade)
