@@ -38,8 +38,8 @@ function configuretomcat() {
 	sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 	rm /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 	rm /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
-	ln -s /etc/geonetwork/config.xml /var/lib/tomcat6/webapps/WEB-INF/config.xml
-	ln -s /etc/geoserver/web.xml /var/lib/tomcat6/webapps/WEB-INF/web.xml
+	ln -s /etc/geonetwork/config.xml /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+	ln -s /etc/geoserver/web.xml /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
         # and set the tomcat user as the owner
         chown tomcat6. /var/lib/geoserver/data/ -R
         chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
