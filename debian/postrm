@@ -23,8 +23,10 @@ case "$1" in
     ;;
 
     purge)
-	su - postgres -c 'dropdb geonode' || true
-	su - postgres -c 'dropuser geonode' || true
+	set +e
+	`su - postgres -c 'dropdb geonode'` || true
+	`su - postgres -c 'dropuser geonode'` || true
+	set -e
 	rm -rf /var/lib/geoserver
     ;;
     failed-upgrade)

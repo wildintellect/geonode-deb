@@ -43,8 +43,8 @@ install:
 	cp -rp $(CURDIR)/debian/support/geonode.binary $(CURDIR)/debian/geonode/usr/bin/geonode
 	# Last step is to copy the scripts and patches that would be used in postinst	
 	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
-	cp ${CURDIR}/debian/patches/patch.geoserver $(CURDIR)/debian/geonode/usr/share/geonode/
-	cp ${CURDIR}/debian/patches/patch.geonetwork $(CURDIR)/debian/geonode/usr/share/geonode/
+	cp ${CURDIR}/debian/geoserver/web.xml $(CURDIR)/debian/geonode/etc/geoserver/
+	cp ${CURDIR}/debian/geonetwork/config.xml $(CURDIR)/debian/geonode/etc/geonetwork/
 	cp ${CURDIR}/debian/support/geonode.admin $(CURDIR)/debian/geonode/usr/share/geonode/admin.json
 	cp ${CURDIR}/debian/support/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/
 binary-indep: build install

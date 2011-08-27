@@ -25,19 +25,21 @@ function randpass() {
 
 function configuretomcat() {
 
-	# configure tomcat
-	# FIXME(Ariel): Make this a patch
-	cat <<- EOF >> /etc/default/tomcat6
-	JAVA_OPTS="-Djava.awt.headless=true -Xmx1024m -Xms1024M -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
-	EOF
-	# perform geonode specific customizations on geoserver
-	#
-	patch -l /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml  < /usr/share/geonode/patch.geoserver
-        sed -i "s/THE_GEONODE_BASE_URL/localhost/g" /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
-	patch -R -l /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml  < /usr/share/geonode/patch.geonetwork
-        sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
-        sed -i "s/jdbc:postgresql:geonetwork/jdbc:postgresql:geonode/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
-
+	# configure tomcat defaults to avoid geonetwork bug and increase the available ram
+	if ~ grep saxon /etc/default/tomcat6
+	then
+		cat <<- EOF >> /etc/default/tomcat6
+		JAVA_OPTS="${JAVA_OPTS} -Djava.awt.headless=true"
+		JAVA_OPTS="${JAVA_OPTS} -Xmx1024m -Xms1024M -XX:MaxPermSize=256m"
+		JAVA_OPTS="${JAVA_OPTS} -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
+		EOF
+	fi
+	# Let geonetwork know the geonode password
+	sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+	rm /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+	rm /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
+	ln -s /etc/geonetwork/config.xml /var/lib/tomcat6/webapps/WEB-INF/config.xml
+	ln -s /etc/geoserver/web.xml /var/lib/tomcat6/webapps/WEB-INF/web.xml
         # and set the tomcat user as the owner
         chown tomcat6. /var/lib/geoserver/data/ -R
         chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
@@ -76,13 +78,16 @@ function configuredjango() {
 
         mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
 
-	# FIXME(Ariel): Put geoserverpass and secretkey in local_settings
-        secretkey=$(randpass 18 0)
-        geoserverpass=$(randpass 8 0)
+	if grep THE_SECRET_KEY /etc/default/geonode
+	then
+	    secretkey=$(randpass 18 0)
+	    geoserverpass=$(randpass 8 0)
 
-        sed -i "s/THE_SECRET_KEY/$secretkey/g" /etc/default/geonode
-        sed -i "s/THE_GEOSERVER_PASSWORD/$geoserverpass/g" /etc/default/geonode
-        sed -i "s/THE_DATABASE_PASSWORD/$psqlpass/g" /etc/default/geonode
+	    sed -i "s/THE_SECRET_KEY/$secretkey/g" /etc/default/geonode
+	    sed -i "s/THE_GEOSERVER_PASSWORD/$geoserverpass/g" /etc/default/geonode
+	    sed -i "s/THE_DATABASE_PASSWORD/$psqlpass/g" /etc/default/geonode
+	fi
+
 	ln -s /etc/default/geonode /var/lib/geonode/src/GeoNodePy/geonode/local_settings.py
 	chmod +x /usr/bin/geonode
 	/usr/bin/geonode syncdb --noinput
