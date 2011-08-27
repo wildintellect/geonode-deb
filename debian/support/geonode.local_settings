@@ -3,7 +3,7 @@ MINIFIED_RESOURCES = True
 SERVE_MEDIA=False
 
 SITENAME = 'GeoNode'
-SITEURL = 'http:/localhost/'
+SITEURL = 'http://localhost/'
 
 DATABASE_ENGINE = 'postgresql_psycopg2'
 DATABASE_NAME = 'geonode'
