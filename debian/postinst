@@ -26,18 +26,18 @@ function randpass() {
 function configuretomcat() {
 
 	# configure tomcat defaults to avoid geonetwork bug and increase the available ram
-	if [ ! grep saxon /etc/default/tomcat6]
+	if grep saxon /etc/default/tomcat6
 	then
+		echo
+	else
 		cat <<- EOF >> /etc/default/tomcat6
-		JAVA_OPTS="${JAVA_OPTS} -Djava.awt.headless=true"
-		JAVA_OPTS="${JAVA_OPTS} -Xmx1024m -Xms1024M -XX:MaxPermSize=256m"
-		JAVA_OPTS="${JAVA_OPTS} -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
+		JAVA_OPTS='-Djava.awt.headless=true -Xmx1024m -Xms1024M -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement'
 		EOF
 	fi
 	# Let geonetwork know the geonode password
 	sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /etc/geonetwork/config.xml
-	rm /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
-	rm /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
+	rm -rf /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+	rm -rf /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
 	ln -s /etc/geonetwork/config.xml /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 	ln -s /etc/geoserver/web.xml /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
         # and set the tomcat user as the owner
@@ -51,19 +51,22 @@ function configuretomcat() {
 function configurepostgres() {
 	# configure postgres user and database
 	#
-        if [ ! su - postgres -c 'psql -l | grep -q template_postgis' ]
+        if su - postgres -c 'psql -l | grep -q template_postgis'
         then
+	    echo "Postgis template database found, using that one as template for geonode"
+	else
 	    su - postgres /usr/share/geonode/create_template_postgis-debian.sh
 	fi
 
 	psqlpass=$(randpass 8 0)
-        if [ ! su - postgres -c 'psql -l | grep -q geonode' ]
-	then
+        if su - postgres -c 'psql -l | grep -q template_postgis'
+        then
+	    echo
+	else
 	    su - postgres -c "createdb geonode -T template_postgis"
 	    echo "CREATE ROLE geonode with login password '$psqlpass' SUPERUSER INHERIT;" > /usr/share/geonode/role.sql
 	    su - postgres -c "psql < /usr/share/geonode/role.sql"
 	fi
-
 }
 
 function configuredjango() {
