@@ -59,7 +59,7 @@ function configurepostgres() {
 	fi
 
 	psqlpass=$(randpass 8 0)
-        if su - postgres -c 'psql -l | grep -q template_postgis'
+        if su - postgres -c 'psql -l | grep -q geonode'
         then
 	    echo
 	else
