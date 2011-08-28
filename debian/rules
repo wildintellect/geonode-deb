@@ -30,8 +30,6 @@ install:
 	cp -rp $(CURDIR)/debian/support/geonode.wsgi $(CURDIR)/debian/geonode/var/www/geonode/wsgi/
 	mkdir -p $(CURDIR)/debian/geonode/etc/apache2/sites-available/
 	cp -rp $(CURDIR)/debian/support/geonode.apache $(CURDIR)/debian/geonode/etc/apache2/sites-available/geonode
-	mkdir -p $(CURDIR)/debian/geonode/etc/default
-	cp -rp $(CURDIR)/debian/support/geonode.local_settings $(CURDIR)/debian/geonode/etc/default/geonode
 	cp -rp $(CURDIR)/debian/support/geonode.robots $(CURDIR)/debian/geonode/var/www/geonode/robots.txt
 	# Third step is to unpack the pybundle and put the virtualenv in the right place
 	mkdir -p $(CURDIR)/debian/geonode/var/lib/geonode
@@ -50,6 +48,7 @@ install:
 	cp -rp ${CURDIR}/debian/support/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/
 	# Sixth step is to configure /etc/geonode/ with folders for custom media and templates
 	mkdir -p $(CURDIR)/debian/geonode/etc/geonode
+	cp -rp $(CURDIR)/debian/support/geonode.local_settings $(CURDIR)/debian/geonode/etc/geonode/local_settings.py
 	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/media
 	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/templates
 binary-indep: build install
