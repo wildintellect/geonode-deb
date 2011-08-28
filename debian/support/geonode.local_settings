@@ -1,3 +1,6 @@
+import os
+import geonode
+
 DEBUG = TEMPLATE_DEBUG = False
 MINIFIED_RESOURCES = True
 SERVE_MEDIA=False
@@ -64,6 +67,19 @@ GEOSERVER_CREDENTIALS = 'geoserver', 'THE_GEOSERVER_PASSWORD'
 GOOGLE_API_KEY = ''
 
 DEFAULT_LAYERS_OWNER='admin'
+
+GEONODE_ROOT = os.path.dirname(geonode.__file__)
+
+TEMPLATE_DIRS = (
+    '/etc/geonode/templates',
+    os.path.join(GEONODE_ROOT, 'templates'),
+)
+
+# Additional directories which hold static files
+STATICFILES_DIRS = [
+    '/etc/geonode/media',
+    os.path.join(GEONODE_ROOT, 'media'),
+]
 
 import logging
 _logger = logging.getLogger('geonode.maps')
