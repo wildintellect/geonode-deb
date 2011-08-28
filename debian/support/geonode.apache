@@ -3,9 +3,9 @@ WSGIDaemonProcess geonode user=www-data threads=15 processes=2 python-path=REPLA
     Servername localhost
     ServerAdmin webmaster@localhost
 
-    ErrorLog /var/log/apache2/error.log
+    ErrorLog /var/log/apache2/error.geonode.log
     LogLevel warn
-    CustomLog /var/log/apache2/access.log combined
+    CustomLog /var/log/apache2/access.geonode.log combined
 
     WSGIProcessGroup geonode
     WSGIPassAuthorization On

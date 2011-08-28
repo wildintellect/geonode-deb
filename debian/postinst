@@ -38,7 +38,13 @@ function configuretomcat() {
 	sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /etc/geonetwork/config.xml
 	rm -rf /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
 	ln -sf /etc/geonetwork/config.xml /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
-        # and set the tomcat user as the owner
+	# Set up logging symlinks to /var/log/geonode
+	mkdir -p /var/log/geonode
+	ln -sf /var/lib/tomcat6/logs/catalina.out /var/log/geonode/tomcat.log
+	ln -sf /var/lib/tomcat6/logs/geonetwork.log /var/log/geonode/geonetwork.log
+	ln -sf /var/lib/geoserver/data/logs/geoserver.log /var/log/geonode/geoserver.log
+
+        # Set the tomcat user as the owner
         chown tomcat6. /var/lib/geoserver/data/ -R
         chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
         chown tomcat6. /var/lib/tomcat6/webapps/geoserver -R
@@ -86,10 +92,13 @@ function configuredjango() {
 	fi
 
 	ln -s /etc/default/geonode /var/lib/geonode/src/GeoNodePy/geonode/local_settings.py
+	# Set up logging symlink
+	ln -sf /var/log/apache2/error.geonode.log /var/log/geonode/geonode.log
+
 	chmod +x /usr/bin/geonode
-	/usr/bin/geonode syncdb --noinput
-	/usr/bin/geonode collectstatic -v0 --noinput
-	/usr/bin/geonode loaddata /usr/share/geonode/admin.json
+	geonode syncdb --noinput
+	geonode collectstatic -v0 --noinput
+	geonode loaddata /usr/share/geonode/admin.json
 }
 
 function configureapache() {
