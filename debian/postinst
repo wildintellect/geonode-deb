@@ -93,7 +93,7 @@ function configuredjango() {
 
 	ln -s /etc/geonode/local_settings.py /var/lib/geonode/src/GeoNodePy/geonode/local_settings.py
 	# Set up logging symlink
-	ln -sf /var/log/apache2/error.geonode.log /var/log/geonode/geonode.log
+	ln -sf /var/log/apache2/error.log /var/log/geonode/apache.log
 
 	chmod +x /usr/bin/geonode
 	geonode syncdb --noinput
