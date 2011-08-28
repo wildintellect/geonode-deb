@@ -80,6 +80,20 @@ STATICFILES_DIRS = [
     '/etc/geonode/media',
     os.path.join(GEONODE_ROOT, 'media'),
 ]
+# Uncomment the following to receive emails whenever there are errors in GeoNode
+#ADMINS = (
+#            ('John', 'john@example.com'), 
+#         )
+
+# Uncomment the following to use a Gmail account as the email backend
+#EMAIL_USE_TLS = True
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_HOST_USER = 'youremail@gmail.com'
+#EMAIL_HOST_PASSWORD = 'yourpassword'
+#EMAIL_PORT = 587
+
+# For more information on available settings please consult the Django docs at
+# https://docs.djangoproject.com/en/dev/ref/settings
 
 import logging
 _logger = logging.getLogger('geonode.maps')
