@@ -35,9 +35,11 @@ function configuretomcat() {
 		EOF
 	fi
 	# Let geonetwork know the geonode password
-	sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /etc/geonetwork/config.xml
+	sed -i "s/GEONODE_DATABASE_PASSWORD/$psqlpass/g" /etc/geonode/geonetwork/config.xml
 	rm -rf /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
-	ln -sf /etc/geonetwork/config.xml /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+	ln -sf /etc/geonode/geonetwork/config.xml /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+	rm -rf /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
+	ln -sf /etc/geonode/geoserver/web.xml /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
 	# Set up logging symlinks to /var/log/geonode
 	mkdir -p /var/log/geonode
 	ln -sf /var/lib/tomcat6/logs/catalina.out /var/log/geonode/tomcat.log

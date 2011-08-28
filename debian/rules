@@ -41,13 +41,14 @@ install:
 	cp -rp $(CURDIR)/debian/support/geonode.binary $(CURDIR)/debian/geonode/usr/bin/geonode
 	# Fifth step is to copy the scripts and patches that would be used in postinst	
 	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonetwork
-	cp -rp ${CURDIR}/debian/geoserver/web.xml $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
-	cp -rp ${CURDIR}/debian/geonetwork/config.xml $(CURDIR)/debian/geonode/etc/geonetwork/
+	mkdir -p $(CURDIR)/debian/geonode/etc/geonode
+	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/geonetwork
+	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/geoserver
+	cp -rp ${CURDIR}/debian/geoserver/web.xml $(CURDIR)/debian/geonode/etc/geonode/geoserver/
+	cp -rp ${CURDIR}/debian/geonetwork/config.xml $(CURDIR)/debian/geonode/etc/geonode/geonetwork/
 	cp -rp ${CURDIR}/debian/support/geonode.admin $(CURDIR)/debian/geonode/usr/share/geonode/admin.json
 	cp -rp ${CURDIR}/debian/support/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/
 	# Sixth step is to configure /etc/geonode/ with folders for custom media and templates
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonode
 	cp -rp $(CURDIR)/debian/support/geonode.local_settings $(CURDIR)/debian/geonode/etc/geonode/local_settings.py
 	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/media
 	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/templates
