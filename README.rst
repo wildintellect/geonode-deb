@@ -44,18 +44,3 @@ command to fetch dependencies and re-attempt the installation::
 
     apt-get install -f
 
-Step by step instructions for Ubuntu 10.04 and 11.04
-----------------------------------------------------
-
-Open a terminal and run the following commands::
-
-    sudo apt-get update
-    sudo apt-get install -y git-core debhelper devscripts
-    git clone git://github.com/GFDRR/geonode-deb.git
-    cd geonode-deb
-    wget http://dev.geonode.org/release/GeoNode-1.1-beta2.tar.gz
-    tar zxvf GeoNode-1.1-beta2.tar.gz
-    debuild --no-lintian -us -uc
-    sudo dpkg -i ../geonode_1.1.beta+2_all.deb
-    sudo apt-get install -f
-    sudo dpkg -i ../geonode_1.1.beta+2_all.deb
