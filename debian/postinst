@@ -81,7 +81,10 @@ function configuredjango() {
 	cd /var/lib/geonode
 	python bootstrap.py
 
-        mv src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
+	if [ -d src/GeoNodePy/geonode/media/static ]
+	then
+            mv -f src/GeoNodePy/geonode/media/static src/GeoNodePy/geonode/media/geonode
+	fi
 
 	if grep THE_SECRET_KEY /etc/geonode/local_settings.py
 	then

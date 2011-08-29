@@ -6,7 +6,7 @@
 set -e
 
 case "$1" in
-    remove|upgrade|deconfigure)
+    remove|deconfigure)
 	a2dissite geonode
 	a2ensite default
 
@@ -25,6 +25,13 @@ case "$1" in
 	invoke-rc.d tomcat6 start
     ;;
 
+    upgrade)
+	rm -rf /var/lib/geonode/src
+	rm -rf /var/lib/geonode/build
+	rm -rf /var/lib/geonode/lib
+	rm -rf /var/lib/tomcat6/webapps/geoserver/WEB-INF/web.xml
+	rm -rf /var/lib/tomcat6/webapps/geonetwork/WEB-INF/config.xml
+    ;;
     purge)
 	rm -rf /var/lib/geoserver
         if su - postgres -c 'psql -l | grep -q geonode'
