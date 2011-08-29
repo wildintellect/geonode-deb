@@ -1,4 +1,4 @@
-geonode (1.1+RC) unstable; urgency=low
+geonode (1.1-beta4) natty; urgency=low
   * Using latest master, after move to /geoserver
 
  -- Ariel Nunez <ingenieroariel@gmail.com>  Sun, 28 Aug 2011 17:44:33 -0500

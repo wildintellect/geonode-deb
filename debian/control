@@ -2,7 +2,7 @@ Source: geonode
 Section: science
 Priority: extra
 Maintainer: Aaron Greengrass <aaron@thatserver.ca>
-Build-Depends: debhelper (>= 7.0.50~)
+Build-Depends: debhelper (>= 7.0.50~), unzip
 Standards-Version: 3.8.4
 Homepage: http://geonode.org/
 
