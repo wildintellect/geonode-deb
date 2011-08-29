@@ -1,3 +1,13 @@
+geonode (1.1+RC) unstable; urgency=low
+  * Using latest master, after move to /geoserver
+
+ -- Ariel Nunez <ingenieroariel@gmail.com>  Sun, 28 Aug 2011 17:44:33 -0500
+
+geonode (1.1.beta+2) unstable; urgency=low
+  * Update to 1.1beta+2 and added gettext and postgres support
+
+ -- Ariel Nunez <ingenieroariel@gmail.com>  Wed, 10 Aug 2011 17:44:33 -0500
+
 geonode (1.0.final+1) unstable; urgency=low
   * Add dependency on patch command
 

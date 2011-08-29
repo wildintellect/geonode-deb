@@ -19,32 +19,8 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-	if [ -e /etc/apache2/sites-enabled/0000-geonode ]; then
-		invoke-rc.d apache2 stop
-		rm -rf /etc/apache2/sites-enabled/0000-geonode /etc/apache2/sites-available/geonode
-		if [ ! -e /etc/apache2/sites-enabled/000-default ]; then
-			a2ensite default
-		fi
-		invoke-rc.d apache2 start
-	fi
-
-	rm -rf /var/www/geonode 
-
-	# turn off error trapping, one of these may fail
-	set +e
-	su - postgres -c "dropdb geonode"
-	su - postgres -c "dropuser geonode"
-	set -e
-	# turn it back on
-
-	if [ -e /var/lib/tomcat6/geonetwork ]; then
-		invoke-rc.d tomcat6 stop
-		rm -rf  /var/lib/tomcat6/webapps/geoserver-geonode-dev /var/lib/tomcat6/geonetwork
-		rm -rf /var/lib/tomcat6/webapps/geoserver-geonode-dev.war /var/lib/tomcat6/webapps/geonetwork.war
-		invoke-rc.d tomcat6 start
-	fi
-
-	rm -rf /usr/share/geonode/role.sql
+	invoke-rc.d apache2 stop
+	invoke-rc.d tomcat6 stop
     ;;
 
     failed-upgrade)
