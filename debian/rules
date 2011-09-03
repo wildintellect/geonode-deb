@@ -16,42 +16,14 @@ install:
 	dh_testroot
 	dh_prep
 	dh_installdirs
-	# First step is to unpack the wars in the tomcat webapps dir
-	mkdir -p $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver
-	mkdir -p $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geonetwork
-	unzip $(CURDIR)/GeoNode-*/geoserver.war -d $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver
-	unzip $(CURDIR)/GeoNode-*/geonetwork.war -d $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geonetwork
-	mkdir -p $(CURDIR)/debian/geonode/var/lib/geoserver/data
-	cp -rp $(CURDIR)/debian/geonode/var/lib/tomcat6/webapps/geoserver/data/* $(CURDIR)/debian/geonode/var/lib/geoserver/data/
-	# Second step is to put the apache wsgi and conf files in the right places
-	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/static
-	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/uploaded
-	mkdir -p $(CURDIR)/debian/geonode/var/www/geonode/wsgi
-	cp -rp $(CURDIR)/debian/support/geonode.wsgi $(CURDIR)/debian/geonode/var/www/geonode/wsgi/
-	mkdir -p $(CURDIR)/debian/geonode/etc/apache2/sites-available/
-	cp -rp $(CURDIR)/debian/support/geonode.apache $(CURDIR)/debian/geonode/etc/apache2/sites-available/geonode
-	cp -rp $(CURDIR)/debian/support/geonode.robots $(CURDIR)/debian/geonode/var/www/geonode/robots.txt
-	# Third step is to unpack the pybundle and put the virtualenv in the right place
-	mkdir -p $(CURDIR)/debian/geonode/var/lib/geonode
-	cp -rp $(CURDIR)/GeoNode-*/pavement.py $(CURDIR)/debian/geonode/var/lib/geonode/
-	cp -rp $(CURDIR)/GeoNode-*/bootstrap.py $(CURDIR)/debian/geonode/var/lib/geonode/
-	cp -rp $(CURDIR)/GeoNode-*/geonode-webapp.pybundle $(CURDIR)/debian/geonode/var/lib/geonode/
-	# Fourth step is to install the binary
-	mkdir -p $(CURDIR)/debian/geonode/usr/bin/
-	cp -rp $(CURDIR)/debian/support/geonode.binary $(CURDIR)/debian/geonode/usr/bin/geonode
-	# Fifth step is to copy the scripts and patches that would be used in postinst	
-	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonode
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/geonetwork
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/geoserver
-	cp -rp ${CURDIR}/debian/geoserver/web.xml $(CURDIR)/debian/geonode/etc/geonode/geoserver/
-	cp -rp ${CURDIR}/debian/geonetwork/config.xml $(CURDIR)/debian/geonode/etc/geonode/geonetwork/
-	cp -rp ${CURDIR}/debian/support/geonode.admin $(CURDIR)/debian/geonode/usr/share/geonode/admin.json
-	cp -rp ${CURDIR}/debian/support/create_template_postgis-debian.sh $(CURDIR)/debian/geonode/usr/share/geonode/
-	# Sixth step is to configure /etc/geonode/ with folders for custom media and templates
-	cp -rp $(CURDIR)/debian/support/geonode.local_settings $(CURDIR)/debian/geonode/etc/geonode/local_settings.py
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/media
-	mkdir -p $(CURDIR)/debian/geonode/etc/geonode/templates
+	# Create a dir called geonode and unzip the tarball there
+	mkdir -p $(CURDIR)/geonode
+	tar zxvf $(CURDIR)/GeoNode*.tar.gz -C $(CURDIR)/geonode --strip 1
+	# Call geonode's install.sh with the pre flag.
+	$(CURDIR)/geonode/install.sh -s pre $(CURDIR)/debian/support/config-pre.sh
+	# Copying installer and configuration to be used by post installer
+	cp $(CURDIR)/geonode/install.sh $(CURDIR)/debian/geonode/usr/share/geonode
+	cp $(CURDIR)/debian/support/config-post.sh $(CURDIR)/debian/geonode/usr/share/geonode
 binary-indep: build install
 
 binary-arch: build install
