@@ -1,4 +1,10 @@
-geonode (1.1-rc1+1) natty; urgency=low
+geonode (1.1+RC2) lucid; urgency=low
+  * Fixed avatar links
+  * Added virtualenv upgrade to the installer to avoid bugs in Lucid
+  * Fixed admin media configuration
+  * Fixed login popup in embedded maps
+  * Removed the GetCapabilities calls in embedded maps
+  * Fixed install script, added pip upgrade
   * Fixed path to geoserver data dir
 
  -- Ariel Nunez <ingenieroariel@gmail.com>  Fri, 2 Sept 2011 13:44:33 -0500
