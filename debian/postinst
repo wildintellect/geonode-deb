@@ -20,6 +20,15 @@ set -e
 
 case "$1" in
     configure)
+         if [ "$2" = "1.1+RC2" ]
+         then
+             # Migrate old varchar fields to TEXT
+             su - postgres -c 'psql geonode' <<EOF
+ALTER TABLE maps_maplayer 
+    ALTER COLUMN layer_params TYPE text,
+    ALTER COLUMN source_params TYPE text;
+EOF
+         fi
     /usr/share/geonode/install.sh -s post /usr/share/geonode/config-post.sh
     ;;
 
