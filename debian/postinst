@@ -29,7 +29,18 @@ ALTER TABLE maps_maplayer
     ALTER COLUMN source_params TYPE text;
 EOF
          fi
-    /usr/share/geonode/install.sh -s post /usr/share/geonode/config-post.sh
+         if [ "$2" = "" ]
+         then
+		 /usr/share/geonode/install.sh -s once /usr/share/geonode/config-post.sh
+         fi
+
+# ALWAYS run the postinstall tasks
+	 /usr/share/geonode/install.sh -s post /usr/share/geonode/config-post.sh
+
+         if [ "$2" = "" ]
+         then
+		 /usr/share/geonode/install.sh -s setup_apache_once /usr/share/geonode/config-post.sh
+         fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
