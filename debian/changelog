@@ -1,3 +1,8 @@
+geonode (1.1.1+final) lucid; urgency=low
+  * Fixed bug in deleting layers using a postgis backend.
+
+ -- Ariel Nunez <ingenieroariel@gmail.com>  Thu, 12 Mar 2011 18:44:33 -0500
+
 geonode (1.1+final) lucid; urgency=low
   * Moved from SPEED to Partial Buffer in GeoServer's output strategy
   * Proper upgrade support
