@@ -1,3 +1,9 @@
+geonode (1.2+alpha) lucid; urgency=low
+  * Switched to lxml for parsing
+  * Added South for migrations
+
+ -- Ariel Nunez <ingenieroariel@gmail.com>  Fri, 20 Mar 2012 18:44:33 -0500
+
 geonode (1.1.1+final2) lucid; urgency=low
   * Fixed bug in first time installs.
 
