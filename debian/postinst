@@ -3,8 +3,6 @@
 #
 # see: dh_installdeb(1)
 
-. /usr/share/debconf/confmodule
-
 set -e
 
 # summary of how this script can be called:
@@ -19,218 +17,30 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-function randpass() {
-  [ "$2" == "0" ] && CHAR="[:alnum:]" || CHAR="[:graph:]"
-    cat /dev/urandom | tr -cd "$CHAR" | head -c ${1:-32}
-    echo
-}
 
-function configuretomcat() {
-
-	# configure tomcat
-	#
-	cat <<- EOF >> /etc/default/tomcat6
-	JAVA_OPTS="-Djava.awt.headless=true -Xmx1024m -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
-	EOF
-
-	# stop the tomcat process to prevent it from automatically unpacking the war files
-	#
-	invoke-rc.d tomcat6 stop
-
-	# set file permissions and copy the war files in
-	#
-	chown tomcat6. /usr/share/geonode/*.war
-	cp /usr/share/geonode/geonetwork.war /var/lib/tomcat6/webapps
-	unzip -o /var/lib/tomcat6/webapps/geonetwork.war -d /var/lib/tomcat6/webapps/geonetwork > /dev/null
-	chown tomcat6. /var/lib/tomcat6/webapps/geonetwork -R
-	cp /usr/share/geonode/geoserver-geonode-dev.war /var/lib/tomcat6/webapps
-	unzip -o /var/lib/tomcat6/webapps/geoserver-geonode-dev.war -d /var/lib/tomcat6/webapps/geoserver-geonode-dev > /dev/null
-
-	# perform geonode specific customizations on geoserver
-	#
-	patch -l /var/lib/tomcat6/webapps/geoserver-geonode-dev/WEB-INF/web.xml  < /usr/share/geonode/patch.me
-	mkdir -p /opt/geoserver_data
-	cp -rp /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/* /opt/geoserver_data/.
-	chown tomcat6. /opt/geoserver_data/ -R
-	invoke-rc.d tomcat6 start
-
-}
-
-function configurepostgres() {
-	# configure postgres user and database
-	#
-	su - postgres -c "createdb geonode"
-	psqlpass=$(randpass 8 0)
-#	md5pgsql="md5`echo $psqlpass | md5sum | awk '{print $1}'`"
-	echo "CREATE ROLE geonode with login password '$psqlpass' SUPERUSER INHERIT;" > /usr/share/geonode/role.sql
-	su - postgres -c "psql < /usr/share/geonode/role.sql"
-
-}
-
-function configuredjango() {
-	# set up django
-	#
-	mkdir -p /var/www/geonode/{htdocs,htdocs/media,wsgi/geonode/}
-	unzip -o /usr/share/geonode/geonode-client.zip -d /var/www/geonode/htdocs/ > /dev/null
-	cp /usr/share/geonode/bootstrap.py /var/www/geonode/wsgi/geonode/.
-	cp /usr/share/geonode/geonode-webapp.pybundle /var/www/geonode/wsgi/geonode/.
-	cp /usr/share/geonode/pavement.py /var/www/geonode/wsgi/geonode/.
-	cd /var/www/geonode/wsgi/geonode
-	python bootstrap.py
-
-	cd /var/www/geonode/wsgi/geonode/src/GeoNodePy
-	patch -l -p3 < /usr/share/geonode/patch.django
-#	../../bin/python setup.py install
-
-	cat <<- EOF > /var/www/geonode/wsgi/geonode/src/GeoNodePy/geonode/local_settings.py
-	DEBUG = TEMPLATE_DEBUG = False
-	MINIFIED_RESOURCES = True
-	SERVE_MEDIA=False
-
-	SITENAME = "GeoNode"
-	SITEURL = "http://$myhost/"
-
-	DATABASE_ENGINE = 'postgresql_psycopg2'
-	DATABASE_NAME = 'geonode'
-	DATABASE_USER = 'geonode'
-	DATABASE_PASSWORD = "$psqlpass"
-	DATABASE_HOST = 'localhost'
-	DATABASE_PORT = '5432'
-
-	LANGUAGE_CODE = 'en'
-
-	# the filesystem path where uploaded data should be saved
-	MEDIA_ROOT = "/var/www/geonode/htdocs/media/"
-
-	# the web url to get to those saved files
-	MEDIA_URL = SITEURL + "media/"
-
-	GEONODE_UPLOAD_PATH = "/var/www/geonode/htdocs/media/"
-
-	# secret key used in hashing, should be a long, unique string for each
-	# site.  See http://docs.djangoproject.com/en/1.2/ref/settings/#secret-key
-	#
-	# Here is one quick way to randomly generate a string for this use:
-	# python -c 'import random, string; print "".join(random.sample(string.printable.strip(), 50))'
-	SECRET_KEY = ''
-
-	# The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
-	GEOSERVER_BASE_URL = SITEURL + "geoserver-geonode-dev/"
-
-	# The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
-	GEONETWORK_BASE_URL = SITEURL + "geonetwork/"
-
-	# The username and password for a user with write access to GeoNetwork
-	GEONETWORK_CREDENTIALS = "admin", 'admin'
-
-	# A Google Maps API key is needed for the 3D Google Earth view of maps
-	# See http://code.google.com/apis/maps/signup.html
-	GOOGLE_API_KEY = ""
-
-#       GEOS_LIBRARY_PATH = '/usr/lib/libgeos_c.so.1.5.0'
-
-	DEFAULT_LAYERS_OWNER='admin'
-	GEONODE_CLIENT_LOCATION = SITEURL
-	EOF
-
-	cat <<- EOF > /var/www/geonode/wsgi/geonode.wsgi
-	import site, os
-
-	site.addsitedir('/var/www/geonode/wsgi/geonode/lib/python2.6/site-packages')
-	os.environ['DJANGO_SETTINGS_MODULE'] = 'geonode.settings'
-
-	from django.core.handlers.wsgi import WSGIHandler
-	application = WSGIHandler()
-	EOF
-
-}
-
-function configureapache() {
-	# Setup apache
-	#
-	chown www-data -R /var/www/geonode/
-	a2dissite default
-	a2enmod proxy_http
-
-	cat <<- EOF > /etc/apache2/sites-available/geonode
-	<VirtualHost *:80>
-	   Servername $myhost
-	   ServerAdmin webmaster@localhost
-	   DocumentRoot /var/www/geonode/htdocs/
-	   <Directory />
-	       Options FollowSymLinks
-	       AllowOverride None
-	   </Directory>
-	   <Directory /var/www/geonode/htdocs>
-	       Options Indexes FollowSymLinks MultiViews
-	       AllowOverride None
-	       Order allow,deny
-	       allow from all
-	   </Directory>
-	   <Proxy *>
-	       Order allow,deny
-	       Allow from all
-	   </Proxy>
-
-	   ErrorLog /var/log/apache2/error.log
-	   LogLevel warn
-	   CustomLog /var/log/apache2/access.log combined
-
-	   Alias /geonode-client/ /var/www/geonode/htdocs/geonode-client/
-	   Alias /media/ /var/www/geonode/htdocs/media/
-	   Alias /admin-media/ /var/www/geonode/wsgi/geonode/lib/python2.6/site-packages/django/contrib/admin/media/
-
-	   WSGIPassAuthorization On
-	   WSGIScriptAlias / /var/www/geonode/wsgi/geonode.wsgi
-
-	   ProxyPreserveHost On
-
-	   ProxyPass /geoserver-geonode-dev http://localhost:8080/geoserver-geonode-dev
-	   ProxyPassReverse /geoserver-geonode-dev http://localhost:8080/geoserver-geonode-dev
-	   ProxyPass /geonetwork http://localhost:8080/geonetwork
-	   ProxyPassReverse /geonetwork http://localhost:8080/geonetwork
-	</VirtualHost>
-	EOF
-
-	ln -s /etc/apache2/sites-available/geonode /etc/apache2/sites-enabled/0000-geonode
-
-	invoke-rc.d apache2 restart
-
-
-}
 case "$1" in
     configure)
+         if [ "$2" = "1.1+RC2" ]
+         then
+             # Migrate old varchar fields to TEXT
+             su - postgres -c 'psql geonode' <<EOF
+ALTER TABLE maps_maplayer 
+    ALTER COLUMN layer_params TYPE text,
+    ALTER COLUMN source_params TYPE text;
+EOF
+         fi
+         if [ "$2" = "" ]
+         then
+		 /usr/share/geonode/install.sh -s once /usr/share/geonode/config-post.sh
+         fi
 
-	db_get geonode/hostname
-        if [ "$RET" ]; then
-                myhost="$RET"
-        else
-		myhost="localhost"
-	fi
+# ALWAYS run the postinstall tasks
+	 /usr/share/geonode/install.sh -s post /usr/share/geonode/config-post.sh
 
-	db_get geonode/django_user
-	if [ "$RET" ]; then
-		username="$RET"
-	else
-		username="admin"
-	fi
-	db_get geonode/django_password
-	if [ "$RET" ]; then
-		password="$RET"
-	else
-		password="admin"
-	fi
-
-	configuretomcat
-	configurepostgres
-	configuredjango
-	configureapache
-
-	#TODO configure a check to prevent rerunning this
-
-	/var/www/geonode/wsgi/geonode/bin/django-admin.py syncdb --noinput --settings=geonode.settings
-	/var/www/geonode/wsgi/geonode/bin/django-admin.py batchcreatesuperuser $username $password --settings=geonode.settings
-
+         if [ "$2" = "" ]
+         then
+		 /usr/share/geonode/install.sh -s setup_apache_once /usr/share/geonode/config-post.sh
+         fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
@@ -241,12 +51,5 @@ case "$1" in
 	exit 1
     ;;
 esac
-
-# dh_installdeb will replace this with shell code automatically
-# generated by other debhelper scripts.
-
-#DEBHELPER#
-
-db_stop;
 
 exit 0

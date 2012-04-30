@@ -16,16 +16,20 @@ install:
 	dh_testroot
 	dh_prep
 	dh_installdirs
-	mkdir -p $(CURDIR)/debian/geonode/usr/share/geonode
-	cp -rp $(CURDIR)/GeoNode-*/* $(CURDIR)/debian/geonode/usr/share/geonode/.
-	cp ${CURDIR}/debian/patch.me $(CURDIR)/debian/geonode/usr/share/geonode/.
-	cp ${CURDIR}/debian/patch.django $(CURDIR)/debian/geonode/usr/share/geonode/.
+	# Create a dir called geonode and unzip the tarball there
+	mkdir -p $(CURDIR)/geonode
+	tar zxvf $(CURDIR)/GeoNode*.tar.gz -C $(CURDIR)/geonode --strip 1
+	# Call geonode's install.sh with the pre flag.
+	$(CURDIR)/geonode/install.sh -s pre $(CURDIR)/debian/support/config-pre.sh
+	# Copying installer and configuration to be used by post installer
+	cp $(CURDIR)/geonode/install.sh $(CURDIR)/debian/geonode/usr/share/geonode
+	cp $(CURDIR)/debian/support/config-post.sh $(CURDIR)/debian/geonode/usr/share/geonode
 binary-indep: build install
 
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installdebconf
+#	dh_installdebconf
 	dh_installdocs
 #       dh_installmenu
 #       dh_link

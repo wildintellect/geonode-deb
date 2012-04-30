@@ -43,3 +43,4 @@ If dpkg reports an error about unmet dependencies, you can issue the following
 command to fetch dependencies and re-attempt the installation::
 
     apt-get install -f
+
