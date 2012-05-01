@@ -24,7 +24,7 @@ To produce a .deb package which can be redistributed:
 
 * Run the debuild tool to build the package::
 
-    debuild -uc -us
+    debuild -uc -us -A
 
 * geonode-{version}.deb will be produced in the parent directory (one level
   above the directory where you cloned this project).
